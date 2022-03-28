@@ -1,0 +1,8 @@
+*~
+\#*\#
+.\#*
+target/
+.bloop/
+.bsp/
+.metals/
+.DS_Store
