@@ -7,18 +7,19 @@ ThisBuild / organizationName := "Quentin Conner"
 
 lazy val assemblySettings = Seq(
   // jar name
-  assemblyJarName in assembly := ((name) map { (n) => n + ".jar" }).value,
+  assembly / assemblyJarName := ((name) map { (n) => n + ".jar" }).value,
 
   // don't run test
-  test in assembly := {},
+  assembly / test := {},
 
   // merge strategies
-  assemblyMergeStrategy in assembly := {
+  assembly / assemblyMergeStrategy := {
     case "log4j.properties"                                    => MergeStrategy.concat
+    case PathList("io", "netty", xs @ _*)                      => MergeStrategy.last
     case PathList("javax", xs @ _*)                            => MergeStrategy.last
     case PathList("org", "slf4j", "impl", xs @ _*)             => MergeStrategy.last
     case x =>
-      val oldStrategy = (assemblyMergeStrategy in assembly).value
+      val oldStrategy = (assembly / assemblyMergeStrategy).value
       oldStrategy(x)
   }
 )

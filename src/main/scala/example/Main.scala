@@ -28,6 +28,7 @@ object Main extends App {
   lazy val sc: SparkContext = {
     val x = new SparkContext(sparkConf)
     x.setLogLevel("INFO")
+    //x.setLogLevel("DEBUG")
     x
   }
 
@@ -105,6 +106,7 @@ object Main extends App {
         }
     }
 
+
     // read a Stream of Strings representing lines in the Apache Common Log Format
     val textRDD: RDD[String] = Try {
       log.info(s"opening ${uri}")
@@ -113,53 +115,102 @@ object Main extends App {
       case Success(x) =>
         x
       case Failure(ex) =>
-        log.error(s"failed to open text file RDD")
+        log.error(s"failed to open text file")
         log.error(ex.getMessage)
         log.error(ex)
         sc.stop
         sc.emptyRDD
     }
+    //log.info(s"total line count: ${textRDD.count}")
 
-    log.info(s"total line count: ${textRDD.collect.size}")
 
-    def goodStatus(x: Option[WebHit]): Boolean = x match {
-      case None =>
-        false
-      case Some(x) if (x.status == 200) =>
-        true
-      case Some(x) if (x.status == 302) =>
-        true
-      case _ =>
-        log.debug(s"bad status: ${x}")
-        false
-    }
-
-    // parse
+    //
+    // parse text and toss out bad records
+    //
     val hits = textRDD map webhit
-    log.info(s"parseable line count: ${hits.collect.size}")
+    log.info(s"parsed line count: ${hits.count}")
 
-    val goodhits = textRDD map webhit filter goodStatus
-    log.info(s"good line count: ${goodhits.collect.size}")
-    goodhits.foreach(x => log.info(s"goodhit: ${x}"))
+    val goodHitOptions = textRDD map webhit filter goodStatus
+    val goodHits = textRDD.map(webhit).filter(goodStatus).map(_.get)
+    log.info(s"valid line count: ${goodHits.count}")
 
+
+    // urlTuple: ((date, url), count)
+    val urlTuples: RDD[((String, String), Int)] = goodHits.map(x => ((x.date, x.url), 1))
+    val urlCounts: RDD[((String, String), Int)] = urlTuples.reduceByKey(_ + _)
+    //.sortBy(_._1, ascending = false).take(N)
+    urlCounts.foreach(println(_))
+
+    // hostTuple: ((date, host), count)
+    val hostTuples: RDD[((String, String), Int)] = goodHits.map(x => ((x.date, x.host), 1))
+    val hostCounts: RDD[((String, String), Int)] = hostTuples.reduceByKey(_ + _)
+    //.sortBy(_._2, ascending = false).take(N)
+    hostCounts.foreach(println(_))
+
+/*
+    def urlSelector(x: WebHit) = x.url
+    def dateSelector(x: WebHit) = x.date
+    def hostSelector(x: WebHit) = x.host
+
+    // group by day
+    val hitsByDay = goodHits groupBy dateSelector
+
+    // within each day count distinct URLs
+    val hitsByURL = hitsByDay.map( t => {
+      val (date: String, xs: Iterable[WebHit]) = t
+      println(date)
+      println(xs)
+      val foo = xs.groupBy(urlSelector).map( (url: String, ys: Iterable[WebHit]) => {
+        (date, url, ys.size)
+      })
+    })
+ */
+    //val urlTopTen = hitsByURL.sortBy(_._3, ascending = false).take(N)
+    //urlTopTen.foreach(log.debug(_))
+
+
+    // within each day count distinct URLs and keep top N
+    //val hitsByHost = ???
+    //counts foreach println
+
+
+
+    // TODO: switch to non-hadoop spark jar
+    //       or fix the Hadoop config file and missing jar errors on exit
     // graceful shutdown
     sc.stop
     0
   }
 
 
-  final case class WebHit(yyyymmdd: String, host: String, url: String, status: Int)
-
+  //
+  //  our RDD "record" will be this case class
+  //  after parsing the text CLF log entry
+  //
+  final case class WebHit(date: String, host: String, url: String, status: Int)
   def webhit(clfLine: String): Option[WebHit] = Try {
     WebHit(parseDate(clfLine), parseHost(clfLine), parseURL(clfLine), parseStatus(clfLine))
   } match {
     case Success(x) =>
       Some(x)
     case Failure(ex) =>
-      log.warn(ex.getMessage)
-      log.warn(ex)
+      println(ex.getMessage)
       None
   }
+
+  // use this to filter log lines to those that are relevant
+  def goodStatus(x: Option[WebHit]): Boolean = x match {
+    case None =>
+      false
+    case Some(x) if (x.status == 200) =>
+      true
+    case Some(x) if (x.status == 302) =>
+      true
+    case _ =>
+      println(s"bad status: ${x}")
+      false
+  }
+
 
 
 

@@ -6,8 +6,6 @@ package example
 import scala.util.matching.Regex
 
 
-class ParseException extends RuntimeException
-
 object Parse {
 
   private def composeDate(day: String, monthName: String, year: String): String = {
@@ -38,7 +36,7 @@ object Parse {
       case pattern(host, day, monthName, year, url) =>
         (host, composeDate(day, monthName, year), url)
       case _ =>
-        throw new RuntimeException(s"parse failed for: ${clfLine}")
+        throw new ParseException(s"parse failed for: ${clfLine}")
     }
   }
 
@@ -60,7 +58,7 @@ object Parse {
       case pattern(day, monthName, year) =>
         composeDate(day, monthName, year)
       case _ =>
-        throw new RuntimeException(s"date parse failed for: ${clfLine}")
+        throw new ParseException(s"date parse failed for: ${clfLine}")
     }
   }
   
@@ -73,10 +71,10 @@ object Parse {
           case pattern2(mode, url) =>
             url
           case _ =>
-              throw new RuntimeException(s"url parse failed for: ${clfLine}")
+              throw new ParseException(s"url parse failed for: ${clfLine}")
         }
       case _ =>
-        throw new RuntimeException(s"url parse failed for: ${clfLine}")
+        throw new ParseException(s"url parse failed for: ${clfLine}")
     }
   }
 
@@ -94,7 +92,7 @@ object Parse {
                 x.toInt
             }
           case _ =>
-            throw new RuntimeException(s"status parse failed for: ${clfLine}")
+            throw new ParseException(s"status parse failed for: ${clfLine}")
         }
     }
   }
