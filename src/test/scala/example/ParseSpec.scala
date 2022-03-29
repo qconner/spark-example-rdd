@@ -18,9 +18,12 @@ class ParseSpec extends AnyFlatSpec with Matchers {
     Parse.parseHost(l1) shouldEqual "199.72.81.55"
     Parse.parseHost(l2) shouldEqual "burger.letters.com"
     Parse.parseHost(l3) shouldEqual "dd15-062.compuserve.com"
-    Parse.parseHost(l4) shouldEqual "pm4_23.digital.net"
+    //Parse.parseHost(l4) shouldEqual "pm4_23.digital.net"
+    an [ParseException] should be thrownBy Parse.parseHost(l4)
     Parse.parseHost(l5) shouldEqual "pipe6.nyc.pipeline.com"
     Parse.parseHost(l6) shouldEqual "204.120.229.63"
+    an [ParseException] should be thrownBy Parse.parseHost(l7)
+    Parse.parseHost(l8) shouldEqual "frank.mtsu.edu"
   }
 
   "Parse object" should "parse dates from typical CLF log lines" in {
@@ -30,6 +33,7 @@ class ParseSpec extends AnyFlatSpec with Matchers {
     Parse.parseDate(l4) shouldEqual "19950703"
     Parse.parseDate(l5) shouldEqual "19950703"
     Parse.parseDate(l6) shouldEqual "19950701"
+    // TODO l7, l8
   }
 
   "Parse object" should "parse url from typical CLF log lines" in {
@@ -39,6 +43,8 @@ class ParseSpec extends AnyFlatSpec with Matchers {
     Parse.parseURL(l4) shouldEqual "/images/shuttle-patch-small.gif"
     Parse.parseURL(l5) shouldEqual "/shuttle/missions/sts-71/movies/sts-71-mir-dock.mpg"
     Parse.parseURL(l6) shouldEqual "/history/history.html"
+    // TODO l7, l8
+    //an [ParseException] should be thrownBy Parse.parseURL(l8)
   }
 
   "Parse object" should "parse status from typical CLF log lines" in {
@@ -49,7 +55,10 @@ class ParseSpec extends AnyFlatSpec with Matchers {
     Parse.parseStatus(l5) shouldEqual 200
     Parse.parseStatus(l6) shouldEqual 200
     Parse.parseStatus(l7) shouldEqual 200
+    // TODO l8
+    //an [ParseException] should be thrownBy Parse.parseStatus(l7)
   }
+
 
 }
 
