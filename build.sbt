@@ -1,6 +1,6 @@
 import Dependencies.projectDependencies
 
-ThisBuild / scalaVersion     := "2.12.15"
+ThisBuild / scalaVersion     := "2.11.12"
 ThisBuild / version          := "0.1.0"
 ThisBuild / organization     := "org.example"
 ThisBuild / organizationName := "Quentin Conner"
@@ -14,14 +14,16 @@ ThisBuild / organizationName := "Quentin Conner"
 //
 
 lazy val assemblySettings = Seq(
+  Global / onChangedBuildSource := ReloadOnSourceChanges,
+
   // set jar name
-  //assembly / assemblyJarName := ((name) map { (n) => n + ".jar" }).value,
+  assembly / assemblyJarName := ((name) map { (n) => n + ".jar" }).value,
 
   // don't run tests
-  //assembly / test := {},
+  assembly / test := {},
 
   // main class
-  //assembly / mainClass := Some("org.example.Main"),
+  assembly / mainClass := Some("example.Main"),
 /*
   assembly / packageOptions ~= { pos =>
     pos.filterNot { po =>
@@ -36,9 +38,10 @@ lazy val assemblySettings = Seq(
   //
   assembly / assemblyMergeStrategy := {
     // netty
-    case PathList("io", "netty", xs @ _*)                            => MergeStrategy.first
+    //case PathList("io", "netty", xs @ _*)                            => MergeStrategy.first
 
     // keep first for a runnable jar
+    /*
     case PathList("META-INF", xs @ _*) =>
       xs match {
         case "MANIFEST.MF" :: Nil =>
@@ -50,16 +53,29 @@ lazy val assemblySettings = Seq(
         case _  =>
           MergeStrategy.last
       }
+     */
 
     // jackson xml
-    case "module-info.class"                                         => MergeStrategy.first
+    //case "module-info.class"                                         => MergeStrategy.first
 
     // log4j/slf4j/commons logging
-    case PathList("org", "apache", "commons", "logging", xs @ _*)    => MergeStrategy.first
-    case "log4j.properties"                                          => MergeStrategy.concat
+    //case PathList("org", "apache", "commons", "logging", xs @ _*)    => MergeStrategy.first
+    //case "log4j.properties"                                          => MergeStrategy.concat
 
     // Spark unused (may I discard?)
-    case PathList("org", "apache", "spark", "unused", "UnusedStubClass.class") => MergeStrategy.discard //first
+    //case PathList("org", "apache", "spark", "unused", "UnusedStubClass.class") => MergeStrategy.discard //first
+
+    //case "overview.html"                                       => MergeStrategy.first
+    //case "git.properties"                                      => MergeStrategy.first
+    case PathList("javax", xs @ _*)                            => MergeStrategy.last
+    case PathList("org", "apache", "spark", "unused", xs @ _*) => MergeStrategy.last
+    case PathList("org", "apache", "commons", xs @ _*)         => MergeStrategy.last
+    case PathList("org", "apache", "hadoop", xs @ _*)          => MergeStrategy.last
+    //case PathList("net", "jpountz", xs @ _*)                   => MergeStrategy.last
+    case PathList("org", "aopalliance", xs @ _*)               => MergeStrategy.last
+    //case PathList("org", "slf4j", "impl", xs @ _*)                  => MergeStrategy.last
+    case PathList("com", "sun", "research", "ws", "wadl", xs @ _*)  => MergeStrategy.last
+    //case PathList("org", "objectweb", "asm", xs @ _*)               => MergeStrategy.last
 
     // use default strategy for anything else
     case x =>
