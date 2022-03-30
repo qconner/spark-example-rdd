@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "COMPUTE TOP THREE URLs and HOSTs"
+docker run -e TOP_N=3  qconner/spark-example-rdd:latest

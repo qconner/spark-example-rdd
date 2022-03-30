@@ -1,3 +1,14 @@
+/* Copyright (C) 2022 Quentin Alan Conner - All Rights Reserved
+ * You may not use, distribute or modify this code.  All rights
+ * will remain with the author.  Contact the author with any permission
+ * or licensing requests:
+ *
+ * Quentin Conner
+ * 13100 Delphinus Walk
+ * Austin, TX  78732
+ *
+ */
+
 package example
 
 // Java
@@ -42,8 +53,13 @@ object Parse {
 
   
   def parseHost(clfLine: String): String = {
+    //
+    // TODO: disambiguate requirement for valid hostnames that can be used subsequently with DNS
+    //       versus allowing any non-whitespace character we allow now
     // a-z, 0-9 and dash are valid characters for DNS hostnames
-    val pattern = """^([A-Za-z0-9\.\-]+)\s.+$""".r
+    //
+    val strictPattern = """^([A-Za-z0-9\.\-]+)\s.+$""".r
+    val pattern = """^(\S+)\s.+$""".r
     clfLine match {
       case pattern(host) =>
         host

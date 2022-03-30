@@ -1,0 +1,6 @@
+#!/bin/bash
+set -x
+sbt clean test assembly || exit 1
+docker login -u qconner registry-1.docker.io || exit 2
+docker build -t spark-example-rdd:latest -f Dockerfile . || exit 3
+docker push spark-example-rdd:latest docker://registry-1.docker.io/qconner/spark-example-rdd:latest || exit 4

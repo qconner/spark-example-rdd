@@ -1,3 +1,15 @@
+/*
+ * Copyright (C) 2022 Quentin Alan Conner - All Rights Reserved
+ * You may not use, distribute or modify this code.  All rights
+ * will remain with the author.  Contact the author with any
+ * permission or licensing requests.
+ *
+ * Quentin Conner
+ * 13100 Delphinus Walk
+ * Austin, TX  78732
+ *
+ */
+
 package example
 
 // Java
