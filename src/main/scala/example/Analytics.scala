@@ -67,31 +67,16 @@ object Analytics {
     val fs = FileSystem.get(hadoopConf)
 
 
+
     // TODO: check if an HTTP URL exists by way of the HEAD request
     def checkURLexists(httpURL: String): Boolean = {
-      /*
-      val httpClient = Http().outgoingConnection(host = "jsonplaceholder.typicode.com")
-      val request = HttpRequest(uri = Uri("/comments"), headers = List(cookie))
-      val flow = Source.single(request)
-         .via(httpClient)
-         .mapAsync(1)(r => Unmarshal(r.entity).to[List[Post]])
-         .runWith(Sink.head)
-
-      flow.andThen {
-         case Success(list) => println(s"request succeded ${list.size}")
-         case Failure(_) => println("request failed")
-      }.andThen {
-         case _ => system.terminate()
-      }
-       */
-
       Try {
         fs.exists(new Path(httpURL))
       } match {
         case Success(x) =>
           x
         case Failure(ex) =>
-          false
+          false  // force ftp since HTTPClient is not yet implemented
           //true // force github
       }
     }
@@ -125,29 +110,15 @@ object Analytics {
             githubExists match {
               case true =>
                 "https://githubraw.com/qconner/spark-example-rdd/develop/data/NASA_access_log_Jul95.gz"
+                // avoid the 301 redirect?
+                //"https://raw.githubusercontent.com/qconner/spark-example-rdd/develop/data/NASA_access_log_Jul95.gz"
               case false =>
                 // fall back to LBL FTP site
                 "ftp://ftp:pass@ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz"
             }
         }
     }
-/*
-    val tempRDD: RDD[String] = Try {
-      val githubResponse = scala.io.Source.fromURL("https://githubraw.com/qconner/spark-example-rdd/develop/data/NASA_access_log_Jul95.gz").mkString
-      log.warn(githubResponse)
-      val lines = githubResponse.split("\n").filter(_ != "")
-      log.warn(lines.size)
-      sc.parallelize(lines)
-    } match {
-      case Success(xs) =>
-        xs
-      case Failure(ex) =>
-        println(ex.getMessage)
-        sc.stop
-        sc.emptyRDD
-    }
-    println(s"tempRDD count: ${tempRDD.count}")
- */
+
     //
     // read a Stream of Strings representing lines in the Apache Common Log Format,
     // from either HDFS, local filesystem or from FTP.

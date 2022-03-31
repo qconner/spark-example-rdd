@@ -11,7 +11,7 @@ nor Spark Structured Streaming, where SQL statements and DataFrames are featured
 
 I started to use Spark 3.x with Hadoop 3.x but sbt-assembly wouldn't create a proper runnable jar.  I'll likely revisit in the future.
 
-  - **JRE 1.8**: Important!  Java 1.8 is required for running sbt or the application jar.
+  - **JRE 1.8**: Important!  Java 1.8 is required for running sbt or the application jar, even if just building the container.
   - **Apache Spark 2.4.5**: Distributed analytics and data movement tool for Scala.
   - **Hadoop 2.7.7**:  Seems to work with Spark and have less merging than 3.x for the assembly.
 
@@ -54,7 +54,7 @@ great addition, with the ability to interrogate the resulting RDD.
 
 ## Source Code Test Coverage
 
-HTML source code automated test coverage is provided.  Open the target/scala-2.11/scoverage-report/index.html file after
+HTML source code automated test coverage is provided.  Open the `target/scala-2.11/scoverage-report/index.html` file after
 running the following:
 ```
 sbt clean coverage test coverageReport
