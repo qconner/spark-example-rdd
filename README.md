@@ -11,18 +11,17 @@ nor Spark Structured Streaming, where SQL statements and DataFrames are featured
 
 I started to use Spark 3.x with Hadoop 3.x but sbt-assembly wouldn't create a proper runnable jar.  I'll likely revisit in the future.
 
-  - **JRE 1.8**: Important!  Java 1.8 is required for running sbt or the application jar, even if just building the container.
-  - **Apache Spark 2.4.5**: Distributed analytics and data movement tool for Scala.
-  - **Hadoop 2.7.7**:  Seems to work with Spark and have less merging than 3.x for the assembly.
-
 ![](https://www.getdeveloper.net/wp-content/uploads/2018/01/9A41ED48-70B6-4A73-B20F-3FD39883411A-e1515486109106.jpeg)
 
 ## Dependencies
 
-Docker desktop (or compatible) can be used for the container-based method of execution.
-sbt 1.3.5 or higher is recommended for building the jar or doing local development.
+  - **JRE 1.8**: Important!  Java 1.8 is required for running sbt or the application jar, even if just building the container.
+  - **Apache Spark 2.4.5**: Distributed analytics and data movement tool for Scala.
+  - **Hadoop 2.7.7**:  Seems to work with Spark and have less merging than 3.x for the assembly.
 
-The Spark 2.4.5 framework and Hadoop 2.6.5 framework jars are project dependencies.
+Docker desktop (or compatible) can be used for the container-based method of execution.
+
+sbt 1.3.5 or higher is recommended for building the jar or doing local development.
 
 ## Installation
 
@@ -70,12 +69,12 @@ For example, to see the top 100 locally, run `java -jar target/scala-2.11/spark-
 If you are executing the docker container, add the parameter (15 in this example) with:
 
 ```
-$ docker run docker run -e TOP_N=15  qconner/spark-example-rdd:latest
+$ docker run -e TOP_N=15 qconner/spark-example-rdd:latest
 ```
 
-If you have run DOCKER_BUILD above and want to run your local copy of the container image, try:
+If you have used DOCKER_BUILD above and want to run your local copy of the container image, try:
 ```
-$ docker run docker run -e TOP_N=15  spark-example-rdd:latest
+$ docker run -e TOP_N=15 spark-example-rdd:latest
 ```
 
 ## Known issues
