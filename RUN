@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "finding the top three URLs and Hosts"
+java -jar target/scala-2.11/spark-example-rdd.jar 3

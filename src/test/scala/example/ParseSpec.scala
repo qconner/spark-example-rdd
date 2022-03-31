@@ -18,11 +18,12 @@ class ParseSpec extends AnyFlatSpec with Matchers {
     Parse.parseHost(l1) shouldEqual "199.72.81.55"
     Parse.parseHost(l2) shouldEqual "burger.letters.com"
     Parse.parseHost(l3) shouldEqual "dd15-062.compuserve.com"
-    //Parse.parseHost(l4) shouldEqual "pm4_23.digital.net"
-    an [ParseException] should be thrownBy Parse.parseHost(l4)
+    Parse.parseHost(l4) shouldEqual "pm4_23.digital.net"
+    //an [ParseException] should be thrownBy Parse.parseHost(l4)
     Parse.parseHost(l5) shouldEqual "pipe6.nyc.pipeline.com"
     Parse.parseHost(l6) shouldEqual "204.120.229.63"
-    an [ParseException] should be thrownBy Parse.parseHost(l7)
+    Parse.parseHost(l7) shouldEqual "@.scimaging.com"
+    //an [ParseException] should be thrownBy Parse.parseHost(l7)
     Parse.parseHost(l8) shouldEqual "frank.mtsu.edu"
   }
 

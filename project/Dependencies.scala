@@ -9,7 +9,7 @@ trait Libraries {
 
   // Hadoop 2.4.5
   // TODO: figure out 3.2.x Main class in assembly issue
-  lazy val hadoopClient       = "org.apache.hadoop"              %  "hadoop-client"          % "2.6.5"   // searched 2.7.7 - 2.10.1
+  lazy val hadoopClient       = "org.apache.hadoop"              %  "hadoop-client"          % "2.7.7"
 }
 
 object Dependencies extends Libraries {

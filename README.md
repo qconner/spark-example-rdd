@@ -1,82 +1,97 @@
 # spark-example-rdd
-Apache Spark example
+Apache Spark RDD example
 
-**Description**:  This is a batch application of the Apache Spark API
-where an Apache HTTP Common Log Format file is processed.  The top N URLs
-for each day are identified.  The top N client IP addresses are also determined.
+**Description**:  This is an example batch application of the Apache Spark RDD API, using the Scala language,
+whereby a webserver log file is read and some web site usage analytics are computed.
+The top N URLs for each day are identified.  The top N client IP addresses are also determined.
 
-Other things to include:
+This Scala project uses the lower-level RDD API and traditional Map Reduce operations in a batch processing mode.
+This example does not cover example usage of Spark Streaming (where a Stream of RDDs is read) 
+nor Spark Structured Streaming, where SQL statements and DataFrames are featured.
 
-  - **Technology stack**: Indicate the technological nature of the software, including primary programming language(s) and whether the software is intended as standalone or as a module in a framework or other ecosystem.
-  - **Status**:  Alpha, Beta, 1.1, etc. It's OK to write a sentence, too. The goal is to let interested people know where this project is at. This is also a good place to link to the [CHANGELOG](CHANGELOG.md).
-  - **Links to production or demo instances**
-  - Describe what sets this apart from related-projects. Linking to another doc or page is OK if this can't be expressed in a sentence or two.
+I started to use Spark 3.x with Hadoop 3.x but sbt-assembly wouldn't create a proper runnable jar.  I'll likely revisit in the future.
 
+  - **JRE 1.8**: Important!  Java 1.8 is required for running sbt or the application jar.
+  - **Apache Spark 2.4.5**: Distributed analytics and data movement tool for Scala.
+  - **Hadoop 2.7.7**:  Seems to work with Spark and have less merging than 3.x for the assembly.
 
-**Screenshot**: If the software has visual components, place a screenshot after the description; e.g.,
-
-![](https://raw.githubusercontent.com/cfpb/open-source-project-template/main/screenshot.png)
-
+![](https://www.getdeveloper.net/wp-content/uploads/2018/01/9A41ED48-70B6-4A73-B20F-3FD39883411A-e1515486109106.jpeg)
 
 ## Dependencies
 
-Docker desktop, Docker.io or Podman can be used for the container-based method of execution.
+Docker desktop (or compatible) can be used for the container-based method of execution.
 sbt 1.3.5 or higher is recommended for building the jar or doing local development.
+
+The Spark 2.4.5 framework and Hadoop 2.6.5 framework jars are project dependencies.
 
 ## Installation
 
-Detailed instructions on how to install, configure, and get the project running.
-This should be frequently tested to ensure reliability. Alternatively, link to
-a separate [INSTALL](INSTALL.md) document.
+First, check out the source code to a Linux or MacOS environment using "git clone https://github.com/qconner/spark-example-rdd".
 
+There is a script named DOCKER_BUILD in the top level directory.  Run this to build the sbt assembly (a fat jar) and to create the Docker image locally.
+
+```
+$ ./DOCKER_BUILD
+```
+
+If this doesn't work and you have sbt installed, try:
+
+```
+$ sbt run
+```
+
+or
+
+```
+$ sbt clean test assembly
+$ java -jar target/scala-2.11/spark-example-rdd.jar
+```
+
+## Automated Test Execution
+
+Some automated ScalaTest specs were created, to help with the Parser developement.  A mock Spark RDD implementation would be a
+great addition, with the ability to interrogate the resulting RDD.
+
+## Source Code Test Coverage
+
+HTML source code automated test coverage is provided.  Open the target/scala-2.11/scoverage-report/index.html file after
+running the following:
+```
+sbt clean coverage test coverageReport
+```
 
 ## Configuration
 
-If the software is configurable, describe it in detail, either here or in other documentation to which you link.
+The setting for N, the number of URLs or Hosts to show for each day can be specified as the "TOP_N" parameter when running the docker container.
+If you are running the jar file locally from a "sbt assembly", this parameter can be passed as the only argument.
 
-## Usage
+For example, to see the top 100 locally, run `java -jar target/scala-2.11/spark-example-rdd.jar 100`
 
-Show users how to use the software.
-Be specific.
-Use appropriate formatting when showing code snippets.
+If you are executing the docker container, add the parameter (15 in this example) with:
 
-## How to test the software
+```
+$ docker run docker run -e TOP_N=15  qconner/spark-example-rdd:latest
+```
 
-If the software includes automated tests, detail how to run those tests.
+If you have run DOCKER_BUILD above and want to run your local copy of the container image, try:
+```
+$ docker run docker run -e TOP_N=15  spark-example-rdd:latest
+```
 
 ## Known issues
 
-Document any known significant shortcomings with the software.
-
-## Getting help
-
-Instruct users how to get help with this software; this might include links to an issue tracker, wiki, mailing list, etc.
-
-**Example**
-
-If you have questions, concerns, bug reports, etc, please file an issue in this repository's Issue Tracker.
-
-## Getting involved
-
-This section should detail why people should get involved and describe key areas you are
-currently focusing on; e.g., trying to get feedback on features, fixing certain bugs, building
-important pieces, etc.
-
-General instructions on _how_ to contribute should be stated with a link to [CONTRIBUTING](CONTRIBUTING.md).
-
+Retrieving the datafile from github needs to be implemented.  A "does HTTPS resource exist" function and a gzip decompression HTTP client is needed.
 
 ----
 
-## Open source licensing info
-1. [TERMS](TERMS.md)
-2. [LICENSE](LICENSE)
-3. [CFPB Source Code Policy](https://github.com/cfpb/source-code-policy/)
+Copyright (C) 2022 Quentin Alan Conner - All Rights Reserved
+
+You may not use, distribute or modify this code.  All rights will remain with the author.  Contact the author with any permission or licensing requests:
+
+Quentin Conner
+
+13100 Delphinus Walk
+
+Austin, TX  78732
 
 
-----
-
-## Credits and references
-
-1. Projects that inspired you
-2. Related projects
-3. Books, papers, talks, or other sources that have meaningful impact or influence on this project

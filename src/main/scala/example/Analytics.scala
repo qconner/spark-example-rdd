@@ -15,6 +15,7 @@ package example
 
 // Java
 import java.nio.file.Paths
+import java.net.URI
 
 // Scala
 import scala.util.{Failure, Success, Try}
@@ -24,10 +25,13 @@ import scala.util.matching.Regex
 import org.apache.log4j.Logger
 import org.apache.log4j.Level._
 
-// Apache Spark (incl Hadoop fs)
-import org.apache.hadoop.fs.Path
+// Apache Spark
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
+
+// Apache Hadoop
+import org.apache.hadoop.fs.{FileSystem, Path}
+
 
 import example.Parse._
 
@@ -60,10 +64,10 @@ object Analytics {
 
     // look for data file
     val hadoopConf = sc.hadoopConfiguration
-    val fs = org.apache.hadoop.fs.FileSystem.get(hadoopConf)
+    val fs = FileSystem.get(hadoopConf)
 
 
-    // TODO: check if an HTTP URL exists by was of the HEAD request
+    // TODO: check if an HTTP URL exists by way of the HEAD request
     def checkURLexists(httpURL: String): Boolean = {
       /*
       val httpClient = Http().outgoingConnection(host = "jsonplaceholder.typicode.com")
@@ -79,8 +83,17 @@ object Analytics {
       }.andThen {
          case _ => system.terminate()
       }
-      */
-      false // force FTP
+       */
+
+      Try {
+        fs.exists(new Path(httpURL))
+      } match {
+        case Success(x) =>
+          x
+        case Failure(ex) =>
+          false
+          //true // force github
+      }
     }
 
     val fileNameLong = "NASA_access_log_Jul95.gz"
@@ -114,13 +127,33 @@ object Analytics {
                 "https://githubraw.com/qconner/spark-example-rdd/develop/data/NASA_access_log_Jul95.gz"
               case false =>
                 // fall back to LBL FTP site
-                "ftp://ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz"
+                "ftp://ftp:pass@ita.ee.lbl.gov/traces/NASA_access_log_Jul95.gz"
             }
         }
     }
-
-
-    // read a Stream of Strings representing lines in the Apache Common Log Format
+/*
+    val tempRDD: RDD[String] = Try {
+      val githubResponse = scala.io.Source.fromURL("https://githubraw.com/qconner/spark-example-rdd/develop/data/NASA_access_log_Jul95.gz").mkString
+      log.warn(githubResponse)
+      val lines = githubResponse.split("\n").filter(_ != "")
+      log.warn(lines.size)
+      sc.parallelize(lines)
+    } match {
+      case Success(xs) =>
+        xs
+      case Failure(ex) =>
+        println(ex.getMessage)
+        sc.stop
+        sc.emptyRDD
+    }
+    println(s"tempRDD count: ${tempRDD.count}")
+ */
+    //
+    // read a Stream of Strings representing lines in the Apache Common Log Format,
+    // from either HDFS, local filesystem or from FTP.
+    //
+    // TODO: verify this is single-threaded (unless reading from HDFS URI)
+    //
     val textRDD: RDD[String] = Try {
       log.info(s"opening ${uri}")
       sc.textFile(uri)
@@ -134,19 +167,19 @@ object Analytics {
         sc.stop
         sc.emptyRDD
     }
-    //log.info(s"total line count: ${textRDD.count}")
-
 
     //
     // parse text and toss out bad records
+    // which should happen in parallel
     //
     val hits = textRDD map webhit
     log.info(s"parsed line count: ${hits.count}")
 
-    val goodHitOptions = textRDD map webhit filter goodStatus
-    //val goodHits = textRDD.map(webhit).filter(goodStatus).map(_.get)
+    // filter based on webserver response status
+    val goodHitOptions = hits filter goodStatus
+
     val goodHits = goodHitOptions.filter(_.nonEmpty).map(_.get)
-    log.info(s"valid line count: ${goodHits.count}")
+    log.info(s"valid line count:  ${goodHits.count}")
 
 
 
@@ -181,35 +214,21 @@ object Analytics {
     //
     val urlCountsByDay: RDD[(String, Iterable[(String, String, Int)])] = urlCountTuples.groupBy(_._1)
 
-    //println("\n\ndays:")
-    //urlCountsByDay.sortBy(_._1).foreach((t: (String, Iterable[(String, String, Int)])) => { println(t._1) })
-
 
     //
     // For each date, sort URLtuples by count in descending order.
     // Keep the top N tuples for each day.
     //
-
-    /*
-    val topNurlCountsByDaySorted: RDD[Seq[(String, String, Int)]] = urlCountsByDay.sortBy(_._1).map((t: (String, Iterable[(String, String, Int)])) => {
-      val date = t._1
-      // sort by count descending and keep top N
-      // returning a flattened tuple of date, URL and count
-      val topN: Seq[(String, String, Int)] = t._2.toSeq.sortWith((x,y) => { (y._3 < x._3) }).take(N).map(x => { (date, x._2, x._3) })
-      topN
-    })
-     */
     val topNurlCountsByDaySorted: RDD[Seq[(String, String, Int)]] = urlCountsByDay.map((t: (String, Iterable[(String, String, Int)])) => {
       val date = t._1
-      // sort by count descending and keep top N
-      // yielding a flattened tuple of date, URL and count
       val topN: Seq[(String, String, Int)] = t._2.toSeq.sortWith( (x, y) => {
-        // sort by date ascending, then count descending
+        // sort with date ascending, then count descending
         (x._1 == y._1) match {
           case false =>
+            // date ascending
             (x._1 < y._1)
           case true =>
-            // sort by count descending
+            // count descending
             (y._3 < x._3)
         }
       }).take(N).map(x => { (date, x._2, x._3) })
@@ -224,18 +243,14 @@ object Analytics {
     // TODO: evaluate this topNurlCountsByDaySorted answer from
     // an automated test case using fixed data.
     //
-    // TODO: Research whether a "mock Spark"
-    // test harness exist I can integrate with ScalaTest?  Don't want
-    // to write my own like I had to for Kafka producer services
+    // TODO: Research whether a "mock Spark RDD" test harness exists
     //
-    println("\n\nTop N URLs by day:")
-    topNurlCountsByDaySorted.foreach( xs => {
+    println(s"\n\nTop ${N} URLs by day:")
+    topNurlCountsByDaySorted.collect.foreach( xs => {
       xs.foreach( t => {
         println(s"${t._1}  ${t._2}  ${t._3}")
       })
     })
-
-
 
 
 
@@ -264,15 +279,14 @@ object Analytics {
     //
     val topNhostCountsByDaySorted: RDD[Seq[(String, String, Int)]] = hostCountsByDay.map((t: (String, Iterable[(String, String, Int)])) => {
       val date = t._1
-      // sort by count descending and keep top N
-      // yielding a flattened tuple of date, URL and count
       val topN: Seq[(String, String, Int)] = t._2.toSeq.sortWith( (x, y) => {
         // sort by date ascending, then count descending
         (x._1 == y._1) match {
           case false =>
+            // date ascending
             (x._1 < y._1)
           case true =>
-            // sort by count descending
+            // count descending
             (y._3 < x._3)
         }
       }).take(N).map(x => { (date, x._2, x._3) })
@@ -281,13 +295,12 @@ object Analytics {
     })
 
     // print top N host by day
-    println("\n\nTop N Hosts by day:")
-    topNhostCountsByDaySorted.foreach( xs => {
+    println(s"\n\nTop ${N} Hosts by day:")
+    topNhostCountsByDaySorted.collect.foreach( xs => {
       xs.foreach( t => {
         println(s"${t._1}  ${t._2}  ${t._3}")
       })
     })
-
 
 
     // graceful shutdown
@@ -343,4 +356,3 @@ object Analytics {
   }
 
 }
-
