@@ -77,10 +77,10 @@ object Analytics {
           x
         case Failure(ex) =>
           false  // force ftp since HTTPClient is not yet implemented
-          //true // force github
       }
     }
 
+    // local development to avoid network traffic and delay
     val fileNameLong = "NASA_access_log_Jul95.gz"
     val fullFileNameLong = cwd + "/data/" + fileNameLong
     val longExists: Boolean = fs.exists(new Path(fullFileNameLong))
@@ -91,11 +91,12 @@ object Analytics {
     val shortExists: Boolean = fs.exists(new Path(fullFileNameShort))
     log.debug(s"local short file: ${fullFileNameShort}  exists: ${shortExists}")
 
+    // TODO: support HTTPClient
     val githubURI = s"https://github.com/qconner/spark-example-rdd/raw/${fileNameLong}"
     val githubExists = checkURLexists(githubURI)
     log.debug(s"github-hosted long file: ${githubURI}  exists: ${githubExists}")
 
-
+    // URI selector
     val uri = longExists match {
       case true =>
         // use long file for development
@@ -123,7 +124,7 @@ object Analytics {
     // read a Stream of Strings representing lines in the Apache Common Log Format,
     // from either HDFS, local filesystem or from FTP.
     //
-    // TODO: verify this is single-threaded (unless reading from HDFS URI)
+    // TODO: see which file types for which this is single-threaded (i.e. not when reading from HDFS URI)
     //
     val textRDD: RDD[String] = Try {
       log.info(s"opening ${uri}")

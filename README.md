@@ -17,7 +17,7 @@ I started to use Spark 3.x with Hadoop 3.x but sbt-assembly wouldn't create a pr
 
   - **JRE 1.8**: Important!  Java 1.8 is required for running sbt or the application jar, even if just building the container.
   - **Apache Spark 2.4.5**: Distributed analytics and data movement tool for Scala.
-  - **Hadoop 2.7.7**:  Seems to work with Spark and have less merging than 3.x for the assembly.
+  - **Hadoop 2.9.2**:  Seems to work with pasive FTP and Spark and have less assembly merging relative to 3.2.1.
 
 Docker desktop (or compatible) can be used for the container-based method of execution.
 

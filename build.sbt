@@ -87,7 +87,9 @@ lazy val assemblySettings = Seq(
     case PathList("org", "aopalliance", xs @ _*)               => MergeStrategy.last
     //case PathList("org", "slf4j", "impl", xs @ _*)                  => MergeStrategy.last
     case PathList("com", "sun", "research", "ws", "wadl", xs @ _*)  => MergeStrategy.last
-    //case PathList("org", "objectweb", "asm", xs @ _*)               => MergeStrategy.last
+    case PathList("org", "objectweb", "asm", xs @ _*)          => MergeStrategy.last
+    case PathList("com", "codahale", "metrics", xs @ _*)       => MergeStrategy.last
+
 
     // use default strategy for anything else
     case x =>
